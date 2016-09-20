@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class characterControl : MonoBehaviour {
 
-	List<attractor> attractors = new List<attractor>();
+	public List<attractor> attractors = new List<attractor>();
 
 	// Use this for initialization
 	void Start () {
@@ -26,7 +26,15 @@ public class characterControl : MonoBehaviour {
 				highestAttractor = at;
 			}
 		}
-
+		print (highestAttractor.gameObject.name);
+		Ray2D ray = new Ray2D (transform.position, (highestAttractor.transform.position - transform.position));
+		Debug.DrawRay (transform.position, (highestAttractor.transform.position - transform.position));
+		RaycastHit2D hit = Physics2D.Raycast (transform.position, (highestAttractor.transform.position - transform.position));
+		print ("hit " + hit.transform.name);
+		Quaternion targetRot = Quaternion.Euler (90 * hit.normal);
+		print ("normal " + hit.normal);
+		transform.rotation = targetRot;
+		//transform.rotation = Quaternion.Lerp (transform.rotation, targetRot, Time.deltaTime * 20f);
 	}
 
 	float squareDist(Vector2 vectA, Vector2 vectB) {
