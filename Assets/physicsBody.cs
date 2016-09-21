@@ -21,7 +21,7 @@ public class physicsBody : MonoBehaviour {
 		foreach (attractor at in attractors) {
 			Vector2 dir = at.transform.position - transform.position;
 			dir = dir.normalized;
-			float magnitude = 0.00000000006674f;
+			float magnitude = 6.674f;
 			float dist = squareDist (transform.position, at.transform.position);
 			magnitude *= rb.mass;
 			magnitude *= at.mass;
