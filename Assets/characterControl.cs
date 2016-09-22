@@ -10,12 +10,18 @@ public class characterControl : MonoBehaviour {
 	float speed = 2f;
 	bool canJump;
 	bool mouseHeld = false;
-	public Vector2 slingStart;
-	public Camera scanCam;
+	Vector2 slingStart;
+	Vector2 slingEnd;
+	Vector2 dir;
+	gameManager gm;
+	public GameObject arrow;
+	public int player;
+	bool canControl = false, buffer = false;
 
 	// Use this for initialization
 	void Start () {
 		canJump = false;
+		gm = GameObject.FindObjectOfType<gameManager> ();
 		foreach (attractor at in GameObject.FindObjectsOfType<attractor>()) {
 			attractors.Add(at);
 		}
@@ -32,97 +38,64 @@ public class characterControl : MonoBehaviour {
 				canJump = true;
 			}
 			float magnitude = 1000f;
-			float dist = squareDist (transform.position, at.transform.position);
+			float dist = math.squareDist (transform.position, at.transform.position);
 			magnitude /= dist;
 			if (magnitude > highestMag) {
 				highestMag = magnitude;
 				highestAttractor = at;
 			}
 		}
-		if (squareDist (transform.position, highestAttractor.transform.position) < (highestAttractor.radius - 0.9f) * (highestAttractor.radius - 1f)) {
+		if (math.squareDist (transform.position, highestAttractor.transform.position) < (highestAttractor.radius - 0.9f) * (highestAttractor.radius - 1f)) {
 			canJump = true;
 		}
 		Debug.DrawRay (transform.position, (highestAttractor.transform.position - transform.position));
 		RaycastHit2D hit = Physics2D.Raycast (transform.position, (highestAttractor.transform.position - transform.position));
 		Debug.DrawRay (transform.position, hit.normal);
-		Quaternion targetRot = Quaternion.Euler (0f, 0f, 90 + getAngle (hit.normal));
+		Quaternion targetRot = Quaternion.Euler (0f, 0f, 90 + math.getAngle (hit.normal));
 		transform.rotation = Quaternion.Lerp (transform.rotation, targetRot, Time.deltaTime * 10f);
-		if(rb.velocity.magnitude < 5f) {
-			if(Input.GetKey(KeyCode.A)) {
-				rb.velocity = rb.velocity + speed * (Vector2)transform.TransformDirection (Vector2.right);
-			}
-			if (Input.GetKey (KeyCode.D)) {
-				rb.velocity = rb.velocity - speed * (Vector2)transform.TransformDirection (Vector2.right);
-			}
-			if (canJump) {
-				if(Input.GetKey(KeyCode.Space)) {
-					rb.velocity = rb.velocity + 15 * (Vector2)transform.TransformDirection (Vector2.down);
+
+		if (canControl) {
+			if (rb.velocity.magnitude < 5f) {
+				if (Input.GetKey (KeyCode.A)) {
+					rb.velocity = rb.velocity + speed * (Vector2)transform.TransformDirection (Vector2.right);
+				}
+				if (Input.GetKey (KeyCode.D)) {
+					rb.velocity = rb.velocity - speed * (Vector2)transform.TransformDirection (Vector2.right);
+				}
+				if (canJump) {
+					if (Input.GetKey (KeyCode.Space)) {
+						rb.velocity = rb.velocity + 15 * (Vector2)transform.TransformDirection (Vector2.down);
+					}
 				}
 			}
-		}
-
-		if (Input.GetMouseButtonDown (0)) {
-			mouseHeld = true;
-			//slingStart = (Vector2)Camera.main.ScreenToWorldPoint (new Vector2 (Input.mousePosition.x, Input.mousePosition.y)) - (Vector2)Camera.main.transform.position;
-			slingStart = (Vector2)scanCam.ScreenToWorldPoint(new Vector2(Input.mousePosition.x, Input.mousePosition.y));
-			print (slingStart);
-		} if (Input.GetMouseButtonUp (0)) {
-			mouseHeld = false;
-		}
-		if (mouseHeld) {
-
-		}
-	}
-
-	float squareDist(Vector2 vectA, Vector2 vectB) {
-		float sqrDist = (vectA.x - vectB.x) * (vectA.x - vectB.x) + (vectA.y - vectB.y) * (vectA.y - vectB.y);
-		return sqrDist;
-	}
-
-	float getAngle(Vector2 vect1) {
-		float returnAngle = 0f;
-		Vector2 relativeVect = vect1;
-		//print (relativeVect);
-		if (relativeVect.x == 0) {
-			if (relativeVect.y > 0f) {
-				returnAngle = 90f;
-				return returnAngle;
-			} else {
-				returnAngle = 270f;
-				return returnAngle;
+			if (Input.GetMouseButtonDown (0)) {
+				mouseHeld = true;
+				slingStart = (Vector2)Camera.main.ScreenToWorldPoint (new Vector2 (Input.mousePosition.x, Input.mousePosition.y)) - (Vector2)Camera.main.transform.position;
 			}
-		} if (relativeVect.y == 0) {
-			if (relativeVect.x > 0f) {
-				returnAngle = 0f;
-				return returnAngle;
-			} else {
-				returnAngle = 180f;
-				return returnAngle;
+			if (Input.GetMouseButtonUp (0)) {
+				mouseHeld = false;
+				gm.switchTurn ();
+				slingEnd = (Vector2)Camera.main.ScreenToWorldPoint (new Vector2 (Input.mousePosition.x, Input.mousePosition.y)) - (Vector2)Camera.main.transform.position;
+				dir = slingEnd - slingStart;
+				float strength = dir.magnitude * 2f;
+				if (strength > 50f) {
+					strength = 50f;
+				}
+				dir.Normalize ();
+				GameObject instArrow = (GameObject)Instantiate (arrow, (Vector2)transform.position - dir * 1.5f, Quaternion.Euler (0f, 0f, 90f + math.getAngle (-dir)));
+				instArrow.GetComponent<Rigidbody2D> ().velocity = -dir * strength;
+				instArrow.GetComponent<arrow> ().owner = player;
+			}
+			if (mouseHeld) {
+				//draw arrow here
+				slingEnd = (Vector2)Camera.main.ScreenToWorldPoint (new Vector2 (Input.mousePosition.x, Input.mousePosition.y)) - (Vector2)Camera.main.transform.position;
 			}
 		}
-		float tan = Mathf.Atan2 (Mathf.Abs(relativeVect.y), Mathf.Abs(relativeVect.x))*Mathf.Rad2Deg;
-		if (relativeVect.x < 0f) {
-			if (relativeVect.y < 0f) {
-				// x -, y-
-				returnAngle = 180 + tan;
-			} else if (relativeVect.y > 0f) {
-				// x -, y+
-				returnAngle = 180 - tan;
-			}
-		} else if (relativeVect.x > 0f) {
-			if (relativeVect.y < 0f) {
-				// x +, y-
-				returnAngle = 360 - tan;
-			} else if (relativeVect.y > 0f) {
-				// x +, y+
-				returnAngle = tan;
-			}
-		}
-		return returnAngle;
+		canControl = gm.turn == player;
 	}
 
 	void OnDrawGizmos () {
 		Gizmos.color = Color.blue;
-		Gizmos.DrawCube (slingStart, Vector3.one * 2f);
+		Gizmos.DrawLine (slingStart, slingEnd);
 	}
 }
