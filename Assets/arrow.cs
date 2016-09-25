@@ -4,11 +4,12 @@ using System.Collections;
 public class arrow : MonoBehaviour {
 
 	Rigidbody2D rb;
-	bool landed;
+	bool landed = false;
 	public int owner;
 	float lifetime = 0f;
 	float maxTime = 5f;
 	gameManager gm;
+	public Mesh sphere;
 
 	void Start () {
 		rb = GetComponent<Rigidbody2D> ();
@@ -21,26 +22,47 @@ public class arrow : MonoBehaviour {
 		if (lifetime >= maxTime && !rb.isKinematic) {
 			Destroy (this.gameObject);
 		}
+		if (lifetime >= maxTime && landed) {
+			StartCoroutine (Die (false));
+		}
 		if (!landed) {
 			transform.rotation = Quaternion.Lerp (transform.rotation, Quaternion.Euler (0f, 0f, 90f + math.getAngle (rb.velocity)), Time.deltaTime * 20f);
 		}
 	}
 
 	void OnCollisionEnter2D(Collision2D other) {
-		if (other.gameObject.tag == "attractor") {
-			landed = true;
-			rb.isKinematic = true;
-			GetComponent<BoxCollider2D> ().enabled = false;
-			var em = transform.GetChild (0).GetComponent<ParticleSystem> ().emission;
-			var rate = em.rate;
-			rate.constantMax = 0f;
-			em.rate = rate;
-		} else if (other.gameObject.tag == "player") {
-			//kill the player
-			if (other.gameObject.GetComponent<characterControl> ().player != owner) {
-				Destroy (other.gameObject);
-				Destroy (this.gameObject);
+		if (!landed) {
+			if (other.gameObject.tag == "attractor") {
+				landed = true;
+				rb.isKinematic = true;
+				GetComponent<BoxCollider2D> ().enabled = false;
+				var em = transform.GetChild (0).GetComponent<ParticleSystem> ().emission;
+				var rate = em.rate;
+				rate.constantMax = 0f;
+				em.rate = rate;
+				lifetime = 0f;
+			} else if (other.gameObject.tag == "player") {
+				if (other.gameObject.GetComponent<characterControl> ().player != owner) {
+					landed = true;
+					Destroy (other.gameObject);
+					StartCoroutine (Die (true));
+				}
 			}
 		}
+	}
+
+	IEnumerator Die(bool player) {
+		ParticleSystem ps = GetComponentInChildren<ParticleSystem> ();
+		ps.transform.localPosition = new Vector3 (0f, 0f, 0f);
+		var sh = ps.shape;
+		sh.enabled = true;
+		sh.shapeType = ParticleSystemShapeType.Sphere;
+		sh.randomDirection = true;
+		sh.radius = 0.01f;
+		ps.startSpeed = 20f;
+		ps.Emit (100);
+		GetComponent<Renderer> ().enabled = false;
+		yield return new WaitForSeconds (5f);
+		Destroy (this.gameObject);
 	}
 }

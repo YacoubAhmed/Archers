@@ -18,6 +18,15 @@ public class math : MonoBehaviour {
 		return sqrDist;
 	}
 
+	public static float clampAngle(float ang) {
+		float ret = ang;
+		if (ang < 0) {
+			ret += 360;
+		}
+		ret = ret % 360;
+		return ret;
+	}
+
 	public static float getAngle(Vector2 vect1) {
 		float returnAngle = 0f;
 		Vector2 relativeVect = vect1;
