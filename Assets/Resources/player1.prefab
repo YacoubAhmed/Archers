@@ -304,7 +304,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   arrow: {fileID: 194306, guid: da3d3ba04f0ebdf45b6ad0f34c2ed292, type: 2}
   player: 1
-  sprites: []
 --- !u!114 &11481822
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -7,19 +7,13 @@ public class characterControl : MonoBehaviour {
 
 	List<attractor> attractors = new List<attractor>();
 	Rigidbody2D  rb;
-	float speed = 2f;
-	bool canJump;
-	bool mouseHeld = false;
-	Vector2 slingStart;
-	Vector2 slingEnd;
-	Vector2 dir;
-	float strength;
+	float speed = 2f, strength, walktime;
+	Vector2 slingStart, slingEnd, dir;
 	gameManager gm;
 	public GameObject arrow;
 	public int player;
-	bool canControl = false, buffer = false;
+	bool canControl = false, buffer = false, right = true, mouseHeld = false, canJump, walkSprite = false;
 	Color playerColor;
-	bool right = true;
 	Sprite[] sprites;
 
 	void Start () {
@@ -68,6 +62,21 @@ public class characterControl : MonoBehaviour {
 		Debug.DrawRay (transform.position, hit.normal);
 		Quaternion targetRot = Quaternion.Euler (0f, 0f,math.getAngle (hit.normal) - 90f);
 		transform.rotation = Quaternion.Lerp (transform.rotation, targetRot, Time.deltaTime * 10f);
+		if (rb.velocity.magnitude > 0.2f) {
+			walktime -= Time.deltaTime;
+			if(walktime <= 0) {
+				if (walkSprite) {
+					transform.GetChild (0).GetChild (3).GetComponent<SpriteRenderer> ().sprite = sprites [12];
+				} else {
+					transform.GetChild (0).GetChild (3).GetComponent<SpriteRenderer> ().sprite = sprites [13];
+				}
+				walkSprite = !walkSprite;
+				walktime = 0.1f;
+			}
+		} else {
+			walktime = 0;
+			transform.GetChild (0).GetChild (3).GetComponent<SpriteRenderer> ().sprite = sprites [12];
+		}
 
 		if (canControl) {
 			if (rb.velocity.magnitude < 5f) {
