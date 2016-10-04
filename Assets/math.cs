@@ -68,4 +68,10 @@ public class math : MonoBehaviour {
 		}
 		return returnAngle;
 	}
+
+	public static Vector2 randomVector2D (float xFrom, float xTo, float yFrom, float yTo) {
+		float x = Random.Range (xFrom, xTo);
+		float y = Random.Range (yFrom, yTo);
+		return new Vector2 (x, y);
+	}
 }

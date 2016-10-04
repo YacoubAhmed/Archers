@@ -117,6 +117,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5aa99ac4ef923af40914c8de27681af2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sleeping: 0
 --- !u!198 &19810724
 ParticleSystem:
   m_ObjectHideFlags: 1

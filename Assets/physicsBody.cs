@@ -6,6 +6,8 @@ public class physicsBody : MonoBehaviour {
 
 	Rigidbody2D rb;
 	List<attractor> attractors = new List<attractor>();
+	Vector3 storedVel;
+	public bool sleeping;
 
 	// Use this for initialization
 	void Start () {
@@ -17,16 +19,38 @@ public class physicsBody : MonoBehaviour {
 	 
 	// Update is called once per frame
 	void Update () {
-		foreach (attractor at in attractors) {
-			Vector2 dir = at.transform.position - transform.position;
-			dir = dir.normalized;
-			float magnitude = 6.674f;
-			float dist = math.squareDist (transform.position, at.transform.position);
-			magnitude *= rb.mass;
-			magnitude *= at.mass;
-			magnitude /= dist;
-			//magnitude *= 10000000000000;
-			rb.AddForce (dir * magnitude);
+		if (!sleeping) {
+			foreach (attractor at in attractors) {
+				Vector2 dir = at.transform.position - transform.position;
+				dir = dir.normalized;
+				float magnitude = 6.674f;
+				float dist = math.squareDist (transform.position, at.transform.position);
+				magnitude *= rb.mass;
+				magnitude *= at.mass;
+				magnitude /= dist;
+				rb.AddForce (dir * magnitude);
+			}
+		}
+	}
+	public void sleep(bool toSleep) {
+		sleeping = toSleep;
+		if (toSleep) {
+			if (!rb.isKinematic) {
+				storedVel = rb.velocity;
+				rb.velocity = Vector3.zero;
+				rb.Sleep ();
+			}
+			if (gameObject.tag == "projectile") {
+				gameObject.transform.GetChild (0).GetComponent<ParticleSystem> ().Pause ();
+			}
+		} else {
+			if (!rb.isKinematic) {
+				rb.WakeUp ();
+				rb.velocity = storedVel;
+			}
+			if (gameObject.tag == "projectile") {
+				gameObject.transform.GetChild (0).GetComponent<ParticleSystem> ().Play ();
+			}
 		}
 	}
 }

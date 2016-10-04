@@ -303,7 +303,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   arrow: {fileID: 194306, guid: da3d3ba04f0ebdf45b6ad0f34c2ed292, type: 2}
-  player: 1
+  playerID: 0
 --- !u!114 &11481822
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -315,6 +315,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5aa99ac4ef923af40914c8de27681af2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  sleeping: 0
 --- !u!212 &21200594
 SpriteRenderer:
   m_ObjectHideFlags: 1

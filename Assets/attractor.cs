@@ -8,7 +8,7 @@ public class attractor : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		radius = Mathf.Sqrt (transform.localScale.x * transform.localScale.y);
+		radius = transform.localScale.x;
 		GetComponent<Rigidbody2D> ().mass = 25 * radius;
 		mass = GetComponent<Rigidbody2D>().mass;
 	}

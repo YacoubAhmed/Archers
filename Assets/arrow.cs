@@ -7,26 +7,26 @@ public class arrow : MonoBehaviour {
 	bool landed = false;
 	public int owner;
 	float lifetime = 0f;
-	float maxTime = 5f;
-	gameManager gm;
+	float maxTime = 1000f;
 	public Mesh sphere;
 
 	void Start () {
 		rb = GetComponent<Rigidbody2D> ();
-		gm = GameObject.FindObjectOfType<gameManager> ();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		lifetime += Time.deltaTime;
-		if (lifetime >= maxTime && !rb.isKinematic) {
-			Destroy (this.gameObject);
-		}
-		if (lifetime >= maxTime && landed) {
-			StartCoroutine (Die (false));
-		}
-		if (!landed) {
-			transform.rotation = Quaternion.Lerp (transform.rotation, Quaternion.Euler (0f, 0f, 90f + math.getAngle (rb.velocity)), Time.deltaTime * 20f);
+		if (!GetComponent<physicsBody> ().sleeping) {
+			lifetime += Time.deltaTime;
+			if (lifetime >= maxTime && !rb.isKinematic) {
+				Destroy (this.gameObject);
+			}
+			if (lifetime >= maxTime && landed) {
+				StartCoroutine (Die (false));
+			}
+			if (!landed) {
+				transform.rotation = Quaternion.Lerp (transform.rotation, Quaternion.Euler (0f, 0f, 90f + math.getAngle (rb.velocity)), Time.deltaTime * 20f);
+			}
 		}
 	}
 
@@ -42,8 +42,9 @@ public class arrow : MonoBehaviour {
 				em.rate = rate;
 				lifetime = 0f;
 			} else if (other.gameObject.tag == "player") {
-				if (other.gameObject.GetComponent<characterControl> ().player != owner) {
+				if (other.gameObject.GetComponent<characterControl> ().playerID != owner) {
 					landed = true;
+					GameObject.FindObjectOfType<gameManager> ().killPlayer (other.gameObject.GetComponent<characterControl> ().playerID);
 					Destroy (other.gameObject);
 					StartCoroutine (Die (true));
 				}

@@ -1,4 +1,5 @@
 ﻿//TODO multiplayer, hidden gamemode with light up arrows, maybe paint gamemode, can use 2d shadows scripts toooooooo
+//TODO with different levels let each level branch off of the previous one, then when going to options menu you will be able to pan through all of the previous ones
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,26 +12,19 @@ public class characterControl : MonoBehaviour {
 	Vector2 slingStart, slingEnd, dir;
 	gameManager gm;
 	public GameObject arrow;
-	public int player;
-	bool canControl = false, buffer = false, right = true, mouseHeld = false, canJump, walkSprite = false;
+	public int playerID;
+	bool canControl = false, right = true, mouseHeld = false, canJump, walkSprite = false;
 	Color playerColor;
 	Sprite[] sprites;
 
 	void Start () {
+		gm = GameObject.FindObjectOfType<gameManager> ();
+		playerColor = gm.playerColors [playerID - 1];
 		sprites = (Sprite[])Resources.LoadAll<Sprite> ("sprites");
-		switch (player) {
-		case 1:
-			playerColor = Color.red;
-			break;
-		case 2:
-			playerColor = Color.blue;
-			break;
-		}
 		foreach (SpriteRenderer sr in GetComponentsInChildren<SpriteRenderer>()) {
 			sr.material.color = playerColor;
 		}
 		canJump = false;
-		gm = GameObject.FindObjectOfType<gameManager> ();
 		foreach (attractor at in GameObject.FindObjectsOfType<attractor>()) {
 			attractors.Add(at);
 		}
@@ -94,7 +88,7 @@ public class characterControl : MonoBehaviour {
 				}
 				if (canJump) {
 					if (Input.GetKey (KeyCode.Space)) {
-						rb.velocity = rb.velocity + 15 * (Vector2)transform.TransformDirection (Vector2.down);
+						rb.velocity = rb.velocity + 50f * (Vector2)transform.TransformDirection (Vector2.down);
 					}
 				}
 			}
@@ -115,7 +109,7 @@ public class characterControl : MonoBehaviour {
 				dir.Normalize ();
 				GameObject instArrow = (GameObject)Instantiate (arrow, (Vector2)transform.position - dir * 1.5f, Quaternion.Euler (0f, 0f, 90f + math.getAngle (-dir)));
 				instArrow.GetComponent<Rigidbody2D> ().velocity = -dir * strength / 1.5f;
-				instArrow.GetComponent<arrow> ().owner = player;
+				instArrow.GetComponent<arrow> ().owner = playerID;
 				instArrow.GetComponent<SpriteRenderer> ().material.color = playerColor;
 				instArrow.GetComponentInChildren<ParticleSystem> ().startColor = playerColor;
 
@@ -145,16 +139,14 @@ public class characterControl : MonoBehaviour {
 				transform.GetChild (0).GetChild (1).transform.localRotation = Quaternion.Euler (0f, 0f, angle - 90f);
 			}
 		}
-		canControl = gm.turn == player;
+		canControl = gm.turn == playerID;
 		if (right) {
 			transform.GetChild (0).localRotation = Quaternion.Euler (0f, 0f, 0f);
 		} else {
 			transform.GetChild (0).localRotation = Quaternion.Euler (0f, 180f, 0f);
 		}
-	}
-
-	void OnDrawGizmos () {
-		Gizmos.color = Color.blue;
-		Gizmos.DrawLine (slingStart, slingEnd);
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			gm.pause ();
+		}
 	}
 }
