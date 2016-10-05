@@ -36,10 +36,13 @@ public class arrow : MonoBehaviour {
 				landed = true;
 				rb.isKinematic = true;
 				GetComponent<BoxCollider2D> ().enabled = false;
+				/*
 				var em = transform.GetChild (0).GetComponent<ParticleSystem> ().emission;
 				var rate = em.rate;
 				rate.constantMax = 0f;
 				em.rate = rate;
+				*/
+				transform.GetChild(0).GetComponent<ParticleSystem>().emissionRate = 0f;
 				lifetime = 0f;
 			} else if (other.gameObject.tag == "player") {
 				if (other.gameObject.GetComponent<characterControl> ().playerID != owner) {
@@ -55,11 +58,13 @@ public class arrow : MonoBehaviour {
 	IEnumerator Die(bool player) {
 		ParticleSystem ps = GetComponentInChildren<ParticleSystem> ();
 		ps.transform.localPosition = new Vector3 (0f, 0f, 0f);
+		/*
 		var sh = ps.shape;
 		sh.enabled = true;
 		sh.shapeType = ParticleSystemShapeType.Sphere;
 		sh.randomDirection = true;
 		sh.radius = 0.01f;
+		*/
 		ps.startSpeed = 20f;
 		ps.Emit (100);
 		GetComponent<Renderer> ().enabled = false;

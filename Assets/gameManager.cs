@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine.UI;
 
 public class gameManager : MonoBehaviour {
@@ -10,13 +11,18 @@ public class gameManager : MonoBehaviour {
 	public Color[] playerColors;
 	public bool paused = false;
 	public GameObject planet, player, sheet;
-	GameObject currentScreen;
+	GameObject currentScreen, nextLevelButton;
 	public RenderTexture rendTex;
-
+	Vector2 nextPos;
+	List<Vector2> camPositions;
 	//0 turn based 1 multiplayer so on maybe 2 ink
 	//red blue green yellow orange white
 
 	void Start () {
+		camPositions = new List<Vector2>();
+		camPositions.Add(new Vector2(200,0));
+		nextPos = new Vector2(200,0);
+		nextLevelButton = GameObject.Find ("cameraParts").transform.GetChild(0).GetChild(0).gameObject;
 		//StartCoroutine (spawnPlanetsLots (10000));
 		//GenerateLevel (2);
 		selectedButtons = new int[GameObject.Find ("playerSelect").transform.childCount-1];
@@ -100,7 +106,7 @@ public class gameManager : MonoBehaviour {
 		}
 		if (currentPlayers == 1) {
 			//new level
-			GameObject.Find ("overlay").transform.GetChild(0).gameObject.GetComponent<moveTo>().location = new Vector3(-105, -10, 10);
+			nextLevelButton.GetComponent<moveTo>().location = nextLevelButton.transform.parent.parent.position + new Vector3(10, -10, -5);
 		}
 	}
 
@@ -112,17 +118,27 @@ public class gameManager : MonoBehaviour {
 		temp.ReadPixels (new Rect (0, 0, rendTex.width, rendTex.height), 0, 0);
 		temp.Apply ();
 		currentScreen.GetComponent<Renderer> ().material.mainTexture = temp;
-
-		GameObject sheetGO = (GameObject)Instantiate (sheet, new Vector3 (-80, 0, 15), Quaternion.Euler(90, 180, 0));
-
-		GameObject.Find ("overlay").transform.GetChild(0).gameObject.GetComponent<moveTo>().location = new Vector3(-105, -20, 10);
+		float randMove = Random.Range(0f,1f);
+		Vector2 newPos;
+		if(randMove > 0.5f) {
+			newPos = new Vector2(40,0);
+		}
+		else {
+			newPos = new Vector2(0,30);
+		}
+		nextPos = nextPos + newPos;
+		GameObject sheetGO = (GameObject)Instantiate (sheet, new Vector3(nextPos.x, nextPos.y, 20), Quaternion.Euler(90, 180, 0));
+		camPositions.Add(nextPos);
+		nextLevelButton.GetComponent<moveTo>().location = (Vector3)nextPos + new Vector3(10, -20, -5);
+		moveCam(nextPos);
+		nextLevelButton.transform.parent.parent.gameObject.GetComponent<moveTo>().location = new Vector3(nextPos.x, nextPos.y, 20);
 		currentPlayers = playerCount;
 		for (int i = 0; i < playerCount; i++) {
 			playersArr [i] = 1;
 		}
 		Destroy (GameObject.FindObjectOfType<characterControl> ().gameObject);
 		foreach (arrow ar in GameObject.FindObjectsOfType<arrow>()) {
-			Destroy (ar);
+			Destroy (ar.gameObject);
 		}
 		turn = 1;
 		StartCoroutine(GenerateLevel(playerCount));
@@ -204,5 +220,9 @@ public class gameManager : MonoBehaviour {
 
 	public void moveCam(int camPos) {
 		moveToPos = positions [camPos];
+	}
+
+	void moveCam(Vector2 camPos) {
+		moveToPos = camPos;
 	}
 }
