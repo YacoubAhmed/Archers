@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -6,10 +6,17 @@ public class physicsBody : MonoBehaviour {
 
 	Rigidbody2D rb;
 	List<attractor> attractors = new List<attractor>();
+	//list of all other attracting bodies in the scene
+	//required to add force to this physics body to simulate gravity
 	Vector3 storedVel;
+	//vector to represent the velocity of this object
+	//used when pausing the game, the physics body will store its velocity, set its actual velocity to 0 and wait
+	//then when unpaused all physicsbody objects wll
 	public bool sleeping;
+	//boolean to represent whether or not this physicsbody is paused or not
+	
 
-	// Use this for initialization
+	//start void called when the game scene is run, at the start of the game
 	void Start () {
 		rb = this.GetComponent<Rigidbody2D>();
 		foreach (attractor at in GameObject.FindObjectsOfType<attractor>()) {
@@ -40,15 +47,24 @@ public class physicsBody : MonoBehaviour {
 				float magnitude = 6.674f;
 				//define a float magnitude to have the previously mentioned universal gravitational field constant
 				float dist = math.squareDist (transform.position, at.transform.position);
+				//define a float distance that represents the distance squared from the current objects position
+				//and the attractors object position
 				magnitude *= rb.mass;
 				magnitude *= at.mass;
+				//multiplying the magnitude of the vector by the current object's and the attractor
+				//objects masses
 				magnitude /= dist;
+				//dividing the magnitude float by the square distance float
 				rb.AddForce (dir * magnitude);
+				//adding a vector force that is the direction vector
+				//mutliplied by the magnitude float
 			}
 		}
 	}
 	public void sleep(bool toSleep) {
+		//call to put the physics object to sleep or wake it up based on the toSleep bool
 		sleeping = toSleep;
+		//sets the local variable sleeping to toSleep
 		if (toSleep) {
 			if (!rb.isKinematic) {
 				storedVel = rb.velocity;
