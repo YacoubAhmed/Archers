@@ -3,11 +3,15 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+//importing unity packages
 
 public class characterControl : MonoBehaviour {
 
 	List<attractor> attractors = new List<attractor>();
+	//defining a list of attractors, a list is used here since there can be a different number of attractors on each level, so
+	//using an array would be harder to use due to its specific size constraints.
 	Rigidbody2D  rb;
+	//di
 	float speed = 2f, strength, walktime;
 	Vector2 slingStart, slingEnd, dir;
 	gameManager gm;
